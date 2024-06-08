@@ -1,5 +1,9 @@
 import pandas as pd
 
+# Load and inspect the uploaded Excel files
+file_path1 = 'bbtnbc1.xlsx'
+file_path2 = 'bbtnbc2.xlsx'
+
 def load_data(file_path):
     # Load the dataset from an Excel file
     df = pd.read_excel(file_path)
@@ -68,7 +72,7 @@ def compare_with_normal(df, normal_means):
 
 def main():
     # Load the first dataset
-    df1 = load_data('bbtnbc1.xlsx')
+    df1 = load_data(file_path1)
     
     # Analyze bbtnbc1.xlsx to find initial TNBC suspects
     tnbc_suspected = analyze_bbtnbc1(df1)
@@ -78,7 +82,7 @@ def main():
         tnbc_flowchart = analyze_flowchart(tnbc_suspected)
         
         # Load the second dataset
-        df2 = load_data('bbtnbc2.xlsx')
+        df2 = load_data(file_path2)
         
         # Calculate normal reference values from the second dataset
         normal_means = calculate_normal_means(df2)
@@ -91,7 +95,6 @@ def main():
         final_classified = compare_with_normal(df2_cleaned, normal_means)
         
         # Display the results
-        import ace_tools as tools; tools.display_dataframe_to_user(name="Final Classified TNBC Results", dataframe=final_classified)
         print(final_classified.head())
     else:
         print("No initial TNBC suspects found based on ER, PR, and HER2 values.")
