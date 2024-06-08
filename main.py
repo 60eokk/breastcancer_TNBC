@@ -1,15 +1,14 @@
 import pandas as pd
 
-# Load and inspect the uploaded Excel files
-file_path1 = 'bbtnbc1.xlsx'
-file_path2 = 'bbtnbc2.xlsx'
-
 def load_data(file_path):
     # Load the dataset from an Excel file
     df = pd.read_excel(file_path)
     return df
 
 def analyze_bbtnbc1(df):
+    # Print column names for debugging
+    print("Column names:", df.columns.tolist())
+
     # Check if ER, PR, and HER2 values are all less than 1
     df = df.drop(0)  # Drop the header row used for column names
     df = df.reset_index(drop=True)
@@ -95,9 +94,13 @@ def main():
         final_classified = compare_with_normal(df2_cleaned, normal_means)
         
         # Display the results
-        print(final_classified.head())
+        pd.set_option('display.max_rows', None)  # Ensure all rows are displayed
+        pd.set_option('display.max_columns', None)  # Ensure all columns are displayed
+        print(final_classified)
     else:
         print("No initial TNBC suspects found based on ER, PR, and HER2 values.")
 
 if __name__ == "__main__":
+    file_path1 = 'bbtnbc1.xlsx'
+    file_path2 = 'bbtnbc2.xlsx'
     main()
