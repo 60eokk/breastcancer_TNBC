@@ -5,6 +5,13 @@ def load_data(file_path):
     df = pd.read_excel(file_path)
     return df
 
+def check_er_pr_her2(row):
+    try:
+        return (row['ER'] < 1) & (row['PR'] < 1) & (row['HER2'] < 1)
+    except KeyError:
+        return False
+
+
 def follow_flowchart(row):
     try:
         if row['FOXA1'] > 1320.1436:
@@ -40,6 +47,7 @@ def follow_flowchart(row):
         return False
 
 def analyze_flowchart(df):
+    df['ER_PR_HER2_Check'] = df.apply(check_er_pr_her2, axis=1)
     df['TNBC_Flowchart'] = df.apply(follow_flowchart, axis=1)
     return df
 
