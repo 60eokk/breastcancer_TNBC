@@ -1,16 +1,14 @@
 import pandas as pd
 
 def load_data(file_path):
-    # Load the dataset from an Excel file
     df = pd.read_excel(file_path)
     return df
 
 def check_er_pr_her2(row):
     try:
-        return (row['ER'] < 1) & (row['PR'] < 1) & (row['HER2'] < 1)
+        return (pd.isna(row['ER']) or row['ER'] < 1) and (pd.isna(row['PR']) or row['PR'] < 1) and (pd.isna(row['HER2']) or row['HER2'] < 1)
     except KeyError:
         return False
-
 
 def follow_flowchart(row):
     try:
@@ -46,44 +44,33 @@ def follow_flowchart(row):
         print(f"ValueError: {e}")
         return False
 
-def analyze_flowchart(df):
-    df['ER_PR_HER2_Check'] = df.apply(check_er_pr_her2, axis=1)
-    df['TNBC_Flowchart'] = df.apply(follow_flowchart, axis=1)
-    return df
-
 def filter_tnbc_datasets(df):
-    # Filter rows where TNBCYN is 'TNBC' or empty, and TNBC_Flowchart is True
-    tnbc_df = df[(df['TNBCYN'] == 'TNBC') | (df['TNBCYN'].isna()) | (df['TNBC_Flowchart'] == True)]
+    # Apply ER, PR, HER2 check
+    df['ER_PR_HER2_Check'] = df.apply(check_er_pr_her2, axis=1)
+    # Apply flowchart logic
+    df['TNBC_Suspected'] = df.apply(follow_flowchart, axis=1)
+    # Filter rows where TNBCYN is 'TNBC' or empty, and ER_PR_HER2_Check and TNBC_Suspected are True
+    tnbc_df = df[((df['TNBCYN'] == 'TNBC') | (df['TNBCYN'].isna())) & (df['ER_PR_HER2_Check'] == True) & (df['TNBC_Suspected'] == True)]
     return tnbc_df
 
 def calculate_normal_means(df):
-    # Extract the last five rows as normal data
     normal_data = df.tail(5)
-    
-    # Convert relevant columns to numeric types
     normal_data = normal_data.apply(pd.to_numeric, errors='coerce')
-    
-    # Calculate the mean values for the normal data to set as reference
     normal_means = normal_data.mean(numeric_only=True)
     return normal_means
 
 def clean_data_for_comparison(df):
-    # Remove the last five rows used for normal data
     df_cleaned = df.iloc[:-5]
-    
-    # Convert relevant columns to numeric types
     df_cleaned = df_cleaned.apply(pd.to_numeric, errors='coerce')
     return df_cleaned
 
 def compare_with_normal(df, normal_means):
-    # Function to determine if a person is suspected TNBC based on their data
     def is_suspected_tnbc(row, normal_means):
         for col in normal_means.index:
             if pd.notna(normal_means[col]) and row[col] > normal_means[col]:
                 return True
         return False
 
-    # Apply the function to classify each person in the dataset
     df['TNBC_Suspected'] = df.apply(lambda row: is_suspected_tnbc(row, normal_means), axis=1)
     return df
 
@@ -92,10 +79,7 @@ def main():
     file_path = 'bbtnbc_final.xlsx'
     df = load_data(file_path)
     
-    # Analyze using the flowchart
-    df = analyze_flowchart(df)
-    
-    # Filter TNBC datasets
+    # Filter TNBC datasets based on ER, PR, HER2 and flowchart logic
     tnbc_df = filter_tnbc_datasets(df)
     
     # Calculate normal reference values from the dataset
@@ -105,12 +89,12 @@ def main():
     df_cleaned = clean_data_for_comparison(df)
     
     # Compare the TNBC data with normal values to finalize TNBC suspicion
-    final_classified = compare_with_normal(df_cleaned, normal_means)
+    final_classified = compare_with_normal(tnbc_df, normal_means)
     
     # Display the results
     pd.set_option('display.max_rows', None)
     pd.set_option('display.max_columns', None)
-    print(final_classified)
+    print(final_classified[['TNBC_Suspected']])
 
 if __name__ == "__main__":
     main()
