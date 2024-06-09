@@ -23,23 +23,34 @@ def follow_flowchart(row):
         if row['FOXA1'] > 1320.1436:
             if row['ZP2'] > 41.4533:
                 if row['CTRC'] > 0.3677:
+                    return True
+                else:
                     if row['C1orf110'] > 0.4803:
-                        return row['TCP10L2'] > 0.2695 and row['GABRR2'] > 5.1181 and row['GPR88'] > 17.5683
-                    return row['C1orf110'] <= 0.4803 and row['FAM120AOS'] > 1121.6399 and row['GPR88'] > 17.5683
-                return row['CTRC'] <= 0.3677 and row['C1orf110'] > 0.4803 and row['FAM120AOS'] > 1121.6399 and row['GPR88'] > 17.5683
-            return row['ZP2'] <= 41.4533 and row['TCP10L2'] > 0.2695 and row['GABRR2'] > 5.1181 and row['GPR88'] > 17.5683
-        if row['FOXA1'] <= 1320.1436:
-            if row['C6orf146'] > 173.0652:
-                return row['GAGE13'] > 0 and row['GPR88'] > 17.5683
-            if row['C6orf146'] <= 173.0652:
-                return row['SMCP'] > 0.3651 and row['CDK17'] > 804.2082 and row['AQR'] > 455.7455
+                        return True
+                    else:
+                        if row['FAM120AOS'] > 1321.6393:
+                            return True
+                        else:
+                            return False
+            else:
+                if row['TCP10L2'] > 0.2695:
+                    if row['GABRR2'] > 5.1181:
+                        if row['GPR88'] > 17.5683:
+                            return True
+                        else:
+                            return False
+                    else:
+                        return False
+                else:
+                    return False
+        else:
+            return False
     except KeyError as e:
         print(f"KeyError: {e}")
         return False
     except ValueError as e:
         print(f"ValueError: {e}")
         return False
-    return False
 
 def analyze_flowchart(df):
     # Apply the flowchart logic to classify TNBC
