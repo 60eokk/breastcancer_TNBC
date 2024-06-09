@@ -5,9 +5,47 @@ def load_data(file_path):
     df = pd.read_excel(file_path)
     return df
 
+def follow_flowchart(row):
+    try:
+        if row['FOXA1'] > 1320.1436:
+            if row['ZP2'] > 41.4533:
+                if row['CTRC'] > 0.3677:
+                    return True
+                else:
+                    if row['C1orf110'] > 0.4803:
+                        return True
+                    else:
+                        if row['FAM120AOS'] > 1321.6393:
+                            return True
+                        else:
+                            return False
+            else:
+                if row['TCP10L2'] > 0.2695:
+                    if row['GABRR2'] > 5.1181:
+                        if row['GPR88'] > 17.5683:
+                            return True
+                        else:
+                            return False
+                    else:
+                        return False
+                else:
+                    return False
+        else:
+            return False
+    except KeyError as e:
+        print(f"KeyError: {e}")
+        return False
+    except ValueError as e:
+        print(f"ValueError: {e}")
+        return False
+
+def analyze_flowchart(df):
+    df['TNBC_Flowchart'] = df.apply(follow_flowchart, axis=1)
+    return df
+
 def filter_tnbc_datasets(df):
-    # Filter rows where TNBCYN is 'TNBC' or empty
-    tnbc_df = df[(df['TNBCYN'] == 'TNBC') | (df['TNBCYN'].isna())]
+    # Filter rows where TNBCYN is 'TNBC' or empty, and TNBC_Flowchart is True
+    tnbc_df = df[(df['TNBCYN'] == 'TNBC') | (df['TNBCYN'].isna()) | (df['TNBC_Flowchart'] == True)]
     return tnbc_df
 
 def calculate_normal_means(df):
@@ -45,6 +83,9 @@ def main():
     # Load the combined dataset
     file_path = 'bbtnbc_final.xlsx'
     df = load_data(file_path)
+    
+    # Analyze using the flowchart
+    df = analyze_flowchart(df)
     
     # Filter TNBC datasets
     tnbc_df = filter_tnbc_datasets(df)
