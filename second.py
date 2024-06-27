@@ -7,7 +7,7 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.metrics import classification_report
 
 # Load the TNBC data
-tnbc_file_path = 'newData.xlsx'
+tnbc_file_path = 'tnbcPatientData.xlsx'
 tnbc_data = pd.read_excel(tnbc_file_path, skiprows=1)
 
 # Rename the columns based on the first row
@@ -15,7 +15,7 @@ tnbc_data.columns = ['no', 'BRCA1', 'BRCA2', 'TP53', 'EGFR (HER1)', 'MET', 'RB1'
 tnbc_data = tnbc_data.drop(columns=['no'])
 
 # Load the normal data
-normal_file_path = 'normal_data.xlsx'
+normal_file_path = 'normalControlData.xlsx'
 normal_data = pd.read_excel(normal_file_path, skiprows=1)
 
 # Rename the columns based on the first row
