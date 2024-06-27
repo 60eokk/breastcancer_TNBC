@@ -7,7 +7,7 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.metrics import classification_report
 
 # Load the TNBC data
-tnbc_file_path = 'tnbcPatientData.xlsx'
+tnbc_file_path = 'TNBCPatientData.xlsx'
 tnbc_data = pd.read_excel(tnbc_file_path, skiprows=1)
 
 # Rename the columns based on the first row
