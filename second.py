@@ -34,7 +34,7 @@ def check_tnbc_suspective(patient_data):
                                                 if patient_data['CHST8'] > 293.0429:
                                                     return 'TNBC'
                                                 else:
-                                                    if patient_data['FABPS'] <= 85.6336:
+                                                    if patient_data['FABP5'] <= 85.6336:
                                                         if patient_data['HPR'] > 0.2361:
                                                             return 'TNBC'
                                                         else:
@@ -77,13 +77,25 @@ def check_tnbc_suspective(patient_data):
                 else:
                     return 'TNBC'
             else:
-                if patient_data['GABR2'] <= 5.1181:
+                if patient_data['GABRR2'] <= 5.1181:
                     return 'normal'
                 else:
                     if patient_data['GPR88'] > 17.5683:
                         return 'TNBC'
                     else:
                         return 'normal'
+
+
+# Example usage with normal data
+normal_data_file_path = 'normalsample.xlsx'
+normal_data = pd.read_excel(normal_data_file_path)
+
+results = ""
+for index, row in normal_data.iterrows():
+    result = check_tnbc_suspective(row)
+    results += f"no.{row['no.']} : {result}\n"
+
+print(results)
 
 
 # Load the TNBC data
