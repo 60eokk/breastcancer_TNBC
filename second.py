@@ -11,25 +11,25 @@ def check_tnbc_suspective(patient_data):
     if patient_data['FOXA1'] <= 1320.1436:
         if patient_data['C6orf146'] <= 0:
             if patient_data['GNAO1'] > 173.0652:
-                return 'NON-TNBC'
+                return 'normal'
             else:
                 if patient_data['GAGE13'] <= 0:
                     if patient_data['SMCP'] > 0.3651:
-                        return 'NON-TNBC'
+                        return 'normal'
                     else:
                         if patient_data['GALP'] > 0.3808:
-                            return 'NON-TNBC'
+                            return 'normal'
                         else:
                             if patient_data['CDK17'] <= 804.2082:
                                 if patient_data['AQR'] <= 455.7455:
-                                    return 'NON-TNBC'
+                                    return 'normal'
                                 else:
                                     if patient_data['OR10H2'] <= 0:
                                         if patient_data['C13orf34'] <= 126.3544:
-                                            return 'NON-TNBC'
+                                            return 'normal'
                                         else:
                                             if patient_data['HIST1H4L'] > 0.815:
-                                                return 'NON-TNBC'
+                                                return 'normal'
                                             else:
                                                 if patient_data['CHST8'] > 293.0429:
                                                     return 'TNBC'
@@ -38,20 +38,20 @@ def check_tnbc_suspective(patient_data):
                                                         if patient_data['HPR'] > 0.2361:
                                                             return 'TNBC'
                                                         else:
-                                                            return 'NON-TNBC'
+                                                            return 'normal'
                                                     else:
                                                         if patient_data['SRDSA1'] <= 1866.936:
-                                                            return 'NON-TNBC'
+                                                            return 'normal'
                                                         else:
                                                             if patient_data['391714'] > 0:
                                                                 return 'TNBC'
                                                             else:
-                                                                return 'NON-TNBC'
+                                                                return 'normal'
                                     else:
-                                        return 'NON-TNBC'
+                                        return 'normal'
                                     
                             else:
-                                return 'NON-TNBC'
+                                return 'normal'
                 
                 else:
                     return 'TNBC'
@@ -61,29 +61,29 @@ def check_tnbc_suspective(patient_data):
         if patient_data['ZP2'] > 41.4533:
             if patient_data['CTRC'] <= 0.3677:
                 if patient_data['C1orf110'] <= 0.4803:
-                    return 'NON-TNBC'
+                    return 'normal'
                 else:
                     return 'TNBC'
             else:
                 return 'TNBC'
                 if patient_data['TCP10L2'] > 0.2695:
-                    return 'Non-TNBC'
+                    return 'normal'
                 else:
                     return 'TNBC'
         else:
             if patient_data['TCP10L2'] > 0.2695:
                 if patient_data['FAM120AOS'] > 1121.6393:
-                    return 'NON-TNBC'
+                    return 'normal'
                 else:
                     return 'TNBC'
             else:
                 if patient_data['GABR2'] <= 5.1181:
-                    return 'NON-TNBC'
+                    return 'normal'
                 else:
                     if patient_data['GPR88'] > 17.5683:
                         return 'TNBC'
                     else:
-                        return 'NON-TNBC'
+                        return 'normal'
 
 
 # Load the TNBC data
