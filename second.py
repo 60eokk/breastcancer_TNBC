@@ -170,7 +170,31 @@ def predict_subtypes(new_data):
     predicted_labels = label_encoder.inverse_transform(predicted_classes)
     return predicted_labels
 
-# Example usage with random 10 patients from the combined dataset
-# random_patients = X.sample(10, random_state=42)
-# predicted_subtypes = predict_subtypes(random_patients)
-# print("Predicted Subtypes for Random 10 Patients:\n", predicted_subtypes)
+def predict_subtypes(test_file_path):
+    # Load the test data
+    test_data = pd.read_excel(test_file_path)
+    
+    # Extract the 'no' column for result formatting
+    no_column = test_data['no.']
+    
+    # Drop the 'no' column for prediction
+    test_data = test_data.drop(columns=['no.'])
+    
+    # Standardize the features using the same scaler used for training
+    test_data_scaled = scaler.transform(test_data)
+    
+    # Make predictions
+    predictions = pretrain_model.predict(test_data_scaled[:30])
+    predicted_classes = predictions.argmax(axis=1)
+    predicted_labels = label_encoder.inverse_transform(predicted_classes)
+    
+    # Format the results
+    results = ""
+    for no, subtype in zip(no_column[:30], predicted_labels):
+        results += f"no.{no} : {subtype}\n"
+    return results
+
+# Example usage
+test_file_path = 'test_data1.xlsx'
+predicted_results = predict_subtypes(test_file_path)
+print(predicted_results)
