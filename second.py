@@ -87,7 +87,7 @@ def check_tnbc_suspective(patient_data):
 
 
 # Example usage with normal data
-normal_data_file_path = 'normalsample.xlsx'
+normal_data_file_path = 'control data (Normal).xlsx'
 normal_data = pd.read_excel(normal_data_file_path)
 
 results = ""
@@ -189,24 +189,24 @@ def predict_subtypes(test_file_path):
     # Extract the 'no' column for result formatting
     no_column = test_data['no.']
     
-    # Drop the 'no' column for prediction
-    test_data = test_data.drop(columns=['no.'])
+    # Drop the 'no' column and keep only the first 7 columns for prediction
+    test_data = test_data.iloc[:, 1:8]  # This keeps only the first 7 columns after the 'no.' column
     
     # Standardize the features using the same scaler used for training
     test_data_scaled = scaler.transform(test_data)
     
     # Make predictions
-    predictions = pretrain_model.predict(test_data_scaled[:30])
+    predictions = pretrain_model.predict(test_data_scaled[:70])
     predicted_classes = predictions.argmax(axis=1)
     predicted_labels = label_encoder.inverse_transform(predicted_classes)
     
     # Format the results
     results = ""
-    for no, subtype in zip(no_column[:30], predicted_labels):
+    for no, subtype in zip(no_column[:70], predicted_labels):
         results += f"no.{no} : {subtype}\n"
     return results
 
 # Example usage
-test_file_path = 'test_data1.xlsx'
+test_file_path = 'control data (TNBC).xlsx'
 predicted_results = predict_subtypes(test_file_path)
 print(predicted_results)
