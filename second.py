@@ -32,7 +32,7 @@ def check_tnbc_suspective(patient_data):
                                                 return 'normal'
                                             else:
                                                 if patient_data['CHST8'] > 293.0429:
-                                                    return 'TNBC'
+                                                    return 'normal'
                                                 else:
                                                     if patient_data['FABP5'] <= 85.6336:
                                                         if patient_data['HPR'] > 0.2361:
@@ -41,7 +41,7 @@ def check_tnbc_suspective(patient_data):
                                                             return 'normal'
                                                     else:
                                                         if patient_data['SRDSA1'] <= 1866.936:
-                                                            return 'normal'
+                                                            return 'TNBC'
                                                         else:
                                                             if patient_data['391714'] > 0:
                                                                 return 'TNBC'
