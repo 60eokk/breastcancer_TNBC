@@ -1,51 +1,57 @@
+# Tensorflow
 import pandas as pd
+import numpy as np
+import tensorflow as tf
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.metrics import classification_report
 
 
 def check_tnbc_suspective(patient_data):
     if patient_data['FOXA1'] <= 1320.1436:
         if patient_data['C6orf146'] <= 0:
             if patient_data['GNAO1'] > 173.0652:
-                return 'NON-TNBC'
+                return 'normal'
             else:
                 if patient_data['GAGE13'] <= 0:
                     if patient_data['SMCP'] > 0.3651:
-                        return 'NON-TNBC'
+                        return 'normal'
                     else:
                         if patient_data['GALP'] > 0.3808:
-                            return 'NON-TNBC'
+                            return 'normal'
                         else:
                             if patient_data['CDK17'] <= 804.2082:
                                 if patient_data['AQR'] <= 455.7455:
-                                    return 'NON-TNBC'
+                                    return 'normal'
                                 else:
                                     if patient_data['OR10H2'] <= 0:
                                         if patient_data['C13orf34'] <= 126.3544:
-                                            return 'NON-TNBC'
+                                            return 'normal'
                                         else:
                                             if patient_data['HIST1H4L'] > 0.815:
-                                                return 'NON-TNBC'
+                                                return 'normal'
                                             else:
                                                 if patient_data['CHST8'] > 293.0429:
-                                                    return 'TNBC'
+                                                    return 'normal'
                                                 else:
-                                                    if patient_data['FABPS'] <= 85.6336:
+                                                    if patient_data['FABP5'] <= 85.6336:
                                                         if patient_data['HPR'] > 0.2361:
                                                             return 'TNBC'
                                                         else:
-                                                            return 'NON-TNBC'
+                                                            return 'normal'
                                                     else:
                                                         if patient_data['SRDSA1'] <= 1866.936:
-                                                            return 'NON-TNBC'
+                                                            return 'TNBC'
                                                         else:
                                                             if patient_data['391714'] > 0:
                                                                 return 'TNBC'
                                                             else:
-                                                                return 'NON-TNBC'
+                                                                return 'normal'
                                     else:
-                                        return 'NON-TNBC'
+                                        return 'normal'
                                     
                             else:
-                                return 'NON-TNBC'
+                                return 'normal'
                 
                 else:
                     return 'TNBC'
@@ -55,178 +61,152 @@ def check_tnbc_suspective(patient_data):
         if patient_data['ZP2'] > 41.4533:
             if patient_data['CTRC'] <= 0.3677:
                 if patient_data['C1orf110'] <= 0.4803:
-                    return 'NON-TNBC'
+                    return 'normal'
                 else:
                     return 'TNBC'
             else:
                 return 'TNBC'
                 if patient_data['TCP10L2'] > 0.2695:
-                    return 'Non-TNBC'
+                    return 'normal'
                 else:
                     return 'TNBC'
         else:
             if patient_data['TCP10L2'] > 0.2695:
                 if patient_data['FAM120AOS'] > 1121.6393:
-                    return 'NON-TNBC'
+                    return 'normal'
                 else:
                     return 'TNBC'
             else:
-                if patient_data['GABR2'] <= 5.1181:
-                    return 'NON-TNBC'
+                if patient_data['GABRR2'] <= 5.1181:
+                    return 'normal'
                 else:
                     if patient_data['GPR88'] > 17.5683:
                         return 'TNBC'
                     else:
-                        return 'NON-TNBC'
-                    
-
-# Example usage of the TNBC suspicion function
-sample_patient_data = new_data.iloc[0]
-tnbc_suspective_result = check_tnbc_suspective(sample_patient_data)
-print("TNBC Suspective Result for Sample Patient:\n", tnbc_suspective_result)
+                        return 'normal'
 
 
-def load_data(file_path):
-    # Load the dataset from an Excel file
-    df = pd.read_excel(file_path)
-    return df
+# Example usage with normal data
+normal_data_file_path = 'control data (Normal).xlsx'
+normal_data = pd.read_excel(normal_data_file_path)
 
-def analyze_bbtnbc1(df):
-    # Print column names for debugging
-    print("Column names:", df.columns.tolist())
+results = ""
+for index, row in normal_data.iterrows():
+    result = check_tnbc_suspective(row)
+    results += f"no.{row['no.']} : {result}\n"
 
-    # Check if ER, PR, and HER2 values are all less than 1
-    df = df.drop(0)  # Drop the header row used for column names
-    df = df.reset_index(drop=True)
-    df = df.apply(pd.to_numeric, errors='coerce')
+print(results)
 
-    tnbc_suspected = df[(df['ER'] < 1) & (df['PR'] < 1) & (df['HER2'] < 1)]
 
-    return tnbc_suspected
+# Load the TNBC data
+tnbc_file_path = 'TNBCPatientData.xlsx'
+tnbc_data = pd.read_excel(tnbc_file_path, skiprows=1)
 
-def follow_flowchart(row):
-    try:
-        if row['FOXA1'] > 1320.1436:
-            if row['ZP2'] > 41.4533:
-                if row['CTRC'] > 0.3677:
-                    return True
-                else:
-                    if row['C1orf110'] > 0.4803:
-                        return True
-                    else:
-                        if row['FAM120AOS'] > 1321.6393:
-                            return True
-                        else:
-                            return False
-            else:
-                if row['TCP10L2'] > 0.2695:
-                    if row['GABRR2'] > 5.1181:
-                        if row['GPR88'] > 17.5683:
-                            return True
-                        else:
-                            return False
-                    else:
-                        return False
-                else:
-                    return False
-        else:
-            return False
-    except KeyError as e:
-        print(f"KeyError: {e}")
-        return False
-    except ValueError as e:
-        print(f"ValueError: {e}")
-        return False
+# Rename the columns based on the first row
+tnbc_data.columns = ['no', 'BRCA1', 'BRCA2', 'TP53', 'EGFR (HER1)', 'MET', 'RB1', 'PIK3CA', 'subtype']
+tnbc_data = tnbc_data.drop(columns=['no'])
 
-def analyze_flowchart(df):
-    df['TNBC_Suspected'] = df.apply(follow_flowchart, axis=1)
-    return df
-def filter_tnbc_datasets(df):
-    # Filter rows where TNBCYN is 'TNBC' or empty
-    tnbc_df = df[(df['TNBCYN'] == 'TNBC') | (df['TNBCYN'].isna())]
-    return tnbc_df
+# Load the normal data
+normal_file_path = 'normalControlData.xlsx'
+normal_data = pd.read_excel(normal_file_path, skiprows=1)
 
-def calculate_normal_means(df):
-    # Extract the last five rows as normal data
-    normal_data = df.tail(5)
+# Rename the columns based on the first row
+normal_data.columns = ['no', 'BRCA1', 'BRCA2', 'TP53', 'EGFR (HER1)', 'MET', 'RB1', 'PIK3CA']
+normal_data = normal_data.drop(columns=['no'])
 
-    # Convert relevant columns to numeric types
-    normal_data = normal_data.apply(pd.to_numeric, errors='coerce')
+# Create a label for normal data
+normal_data['subtype'] = 'normal'
 
-    # Calculate the mean values for the normal data to set as reference
-    normal_means = normal_data.mean(numeric_only=True)
-    return normal_means
+# Encode the labels
+label_encoder = LabelEncoder()
+normal_data['subtype'] = label_encoder.fit_transform(normal_data['subtype'])
 
-def clean_data_for_comparison(df):
-    # Remove the last five rows used for normal data
-    df_cleaned = df.iloc[:-5]
+# Combine normal data with TNBC data for pre-training
+pretrain_data = pd.concat([tnbc_data.drop(columns=['subtype']), normal_data.drop(columns=['subtype'])])
+pretrain_labels = pd.concat([pd.Series(np.zeros(len(tnbc_data))), pd.Series(np.ones(len(normal_data)))])  # 0 for TNBC, 1 for normal
 
-    # Convert relevant columns to numeric types
-    df_cleaned = df_cleaned.apply(pd.to_numeric, errors='coerce')
-    return df_cleaned
+# Standardize the features
+scaler = StandardScaler()
+pretrain_data_scaled = scaler.fit_transform(pretrain_data)
 
-def compare_with_normal(df, normal_means):
-    # Function to determine if a person is suspected TNBC based on their data
-    def is_suspected_tnbc(row, normal_means):
-        for col in normal_means.index:
-            if pd.notna(normal_means[col]) and row[col] > normal_means[col]:
-                return True
-        return False
+# Split pre-training dataset into training and validation sets
+X_pretrain_train, X_pretrain_val, y_pretrain_train, y_pretrain_val = train_test_split(pretrain_data_scaled, pretrain_labels, test_size=0.2, random_state=42)
 
-    # Apply the function to classify each person in the dataset
-    df['TNBC_Suspected'] = df.apply(lambda row: is_suspected_tnbc(row, normal_means), axis=1)
-    return df
+# Build the TensorFlow model for pre-training
+pretrain_model = tf.keras.Sequential([
+    tf.keras.layers.Dense(64, activation='relu', input_shape=(X_pretrain_train.shape[1],)),
+    tf.keras.layers.Dense(32, activation='relu'),
+    tf.keras.layers.Dense(1, activation='sigmoid')  # Binary classification (TNBC or normal)
+])
 
-def main():
-    # Load the first dataset
-    df1 = load_data('bbtnbc1.xlsx')
-    # Load the combined dataset
-    file_path = 'bbtnbc_final.xlsx'
-    df = load_data(file_path)
+# Compile the pre-training model
+pretrain_model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-    # Filter TNBC datasets
-    tnbc_df = filter_tnbc_datasets(df)
+# Pre-train the model
+pretrain_model.fit(X_pretrain_train, y_pretrain_train, epochs=200, batch_size=16, validation_data=(X_pretrain_val, y_pretrain_val))
 
-    # Calculate normal reference values from the dataset
-    normal_means = calculate_normal_means(df)
+# Remove the last layer for fine-tuning
+pretrain_model.pop()
 
-    # Clean the dataset for comparison
-    df_cleaned = clean_data_for_comparison(df)
+# Add new layers for fine-tuning
+pretrain_model.add(tf.keras.layers.Dense(3, activation='softmax'))  # 3 classes (BL1, BL2, M)
 
-    # Analyze bbtnbc1.xlsx to find initial TNBC suspects
-    tnbc_suspected = analyze_bbtnbc1(df1)
-    # Compare the TNBC data with normal values to finalize TNBC suspicion
-    final_classified = compare_with_normal(df_cleaned, normal_means)
+# Compile the model for fine-tuning
+pretrain_model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
-    if not tnbc_suspected.empty:
-        # Analyze from FOXA1 to GPR88 according to the flowchart
-        tnbc_flowchart = analyze_flowchart(tnbc_suspected)
+# Encode TNBC labels
+tnbc_data['subtype'] = label_encoder.fit_transform(tnbc_data['subtype'])
 
-        # Filter only the TNBC datasets
-        tnbc_only = tnbc_flowchart[tnbc_flowchart['TNBC_Suspected'] == True]
+# Standardize the TNBC data
+tnbc_data_scaled = scaler.transform(tnbc_data.drop(columns=['subtype']))
 
-        # Load the second dataset
-        df2 = load_data('bbtnbc2.xlsx')
+# Split the TNBC dataset into training and testing sets
+X_tnbc_train, X_tnbc_test, y_tnbc_train, y_tnbc_test = train_test_split(tnbc_data_scaled, tnbc_data['subtype'], test_size=0.2, random_state=42)
 
-        # Calculate normal reference values from the second dataset
-        normal_means = calculate_normal_means(df2)
+# Fine-tune the model on TNBC data
+pretrain_model.fit(X_tnbc_train, y_tnbc_train, epochs=200, batch_size=16, validation_split=0.1)
 
-        # Clean the second dataset for comparison
-        df2_cleaned = clean_data_for_comparison(df2)
+# Evaluate the model
+y_pred = pretrain_model.predict(X_tnbc_test)
+y_pred_classes = y_pred.argmax(axis=1)
 
-        # Compare the TNBC data with normal values to finalize TNBC suspicion
-        final_classified = compare_with_normal(df2_cleaned, normal_means)
+# Print the classification report
+report = classification_report(y_tnbc_test, y_pred_classes, target_names=label_encoder.classes_)
+print("Classification Report:\n", report)
 
-        # Display the results
-        pd.set_option('display.max_rows', None)
-        pd.set_option('display.max_columns', None)
-        print(final_classified)
-    else:
-        print("No initial TNBC suspects found based on ER, PR, and HER2 values.")
-    # Display the results
-    pd.set_option('display.max_rows', None)
-    pd.set_option('display.max_columns', None)
-    print(final_classified)
+# Function to predict subtypes for new patients
+def predict_subtypes(new_data):
+    new_data_scaled = scaler.transform(new_data)
+    predictions = model.predict(new_data_scaled)
+    predicted_classes = predictions.argmax(axis=1)
+    predicted_labels = label_encoder.inverse_transform(predicted_classes)
+    return predicted_labels
 
-if __name__ == "__main__":
-    main()
+def predict_subtypes(test_file_path):
+    # Load the test data
+    test_data = pd.read_excel(test_file_path)
+    
+    # Extract the 'no' column for result formatting
+    no_column = test_data['no.']
+    
+    # Drop the 'no' column and keep only the first 7 columns for prediction
+    test_data = test_data.iloc[:, 1:8]  # This keeps only the first 7 columns after the 'no.' column
+    
+    # Standardize the features using the same scaler used for training
+    test_data_scaled = scaler.transform(test_data)
+    
+    # Make predictions
+    predictions = pretrain_model.predict(test_data_scaled[:70])
+    predicted_classes = predictions.argmax(axis=1)
+    predicted_labels = label_encoder.inverse_transform(predicted_classes)
+    
+    # Format the results
+    results = ""
+    for no, subtype in zip(no_column[:70], predicted_labels):
+        results += f"no.{no} : {subtype}\n"
+    return results
+
+# Example usage
+test_file_path = 'control data (TNBC).xlsx'
+predicted_results = predict_subtypes(test_file_path)
+print(predicted_results)
