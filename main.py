@@ -6,6 +6,33 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.metrics import classification_report
 
+# AWS imports
+import boto3
+import sagemaker
+from sagemaker.tensorflow.model import TensorFlowModel
+
+# AWS Setup
+boto_session = boto3.Session(region_name='us-west-2')  # Replace with your preferred region
+sagemaker_session = sagemaker.Session(boto_session=boto_session)
+s3 = boto3.resource('s3')
+
+# S3 bucket configuration
+bucket = 'your-s3-bucket-name'
+prefix = 'tnbc-classification'
+
+def upload_to_s3(file_name, bucket, object_name=None):
+    if object_name is None:
+        object_name = f"{prefix}/{file_name}"
+    try:
+        s3.Bucket(bucket).upload_file(Filename=file_name, Key=object_name)
+    except Exception as e:
+        print(f"Error uploading {file_name} to S3: {e}")
+        return False
+    return True
+
+# Upload data files to S3
+for file in ['control data (Normal).xlsx', 'TNBCPatientData.xlsx', 'normalControlData.xlsx', 'control data (TNBC).xlsx']:
+    upload_to_s3(file, bucket)
 
 def check_tnbc_suspective(patient_data):
     if patient_data['FOXA1'] <= 1320.1436:
@@ -177,7 +204,7 @@ print("Classification Report:\n", report)
 # Function to predict subtypes for new patients
 def predict_subtypes(new_data):
     new_data_scaled = scaler.transform(new_data)
-    predictions = model.predict(new_data_scaled)
+    predictions = pretrain_model.predict(new_data_scaled)
     predicted_classes = predictions.argmax(axis=1)
     predicted_labels = label_encoder.inverse_transform(predicted_classes)
     return predicted_labels
@@ -210,3 +237,57 @@ def predict_subtypes(test_file_path):
 test_file_path = 'control data (TNBC).xlsx'
 predicted_results = predict_subtypes(test_file_path)
 print(predicted_results)
+
+# AWS Integration: Save and deploy the model
+def save_and_deploy_model():
+    # Save the model locally
+    pretrain_model.save('local_model')
+    
+    # Upload the model to S3
+    upload_to_s3('local_model', bucket, f"{prefix}/model")
+    
+    # Deploy the model to SageMaker
+    tensorflow_model = TensorFlowModel(model_data=f"s3://{bucket}/{prefix}/model",
+                                       role='SageMakerRole',  # Replace with your SageMaker role ARN
+                                       framework_version='2.6')
+    predictor = tensorflow_model.deploy(initial_instance_count=1, instance_type='ml.t2.medium')
+    
+    return predictor
+
+# AWS Integration: Predict using the deployed model
+def predict_with_sagemaker(predictor, test_file_path):
+    # Load and preprocess the test data (similar to the original predict_subtypes function)
+    test_data = pd.read_excel(test_file_path)
+    no_column = test_data['no.']
+    test_data = test_data.iloc[:, 1:8]
+    test_data_scaled = scaler.transform(test_data)
+    
+    # Make predictions using the SageMaker endpoint
+    predictions = predictor.predict(test_data_scaled[:70])
+    predicted_classes = predictions['predictions'].argmax(axis=1)
+    predicted_labels = label_encoder.inverse_transform(predicted_classes)
+    
+    # Format the results
+    results = ""
+    for no, subtype in zip(no_column[:70], predicted_labels):
+        results += f"no.{no} : {subtype}\n"
+    return results
+
+# Main execution with AWS integration
+if __name__ == "__main__":
+    # Run the original prediction
+    print("Original Prediction Results:")
+    print(predicted_results)
+    
+    # Save and deploy the model to SageMaker
+    print("\nDeploying model to SageMaker...")
+    sagemaker_predictor = save_and_deploy_model()
+    
+    # Make predictions using the deployed SageMaker model
+    print("\nSageMaker Prediction Results:")
+    sagemaker_results = predict_with_sagemaker(sagemaker_predictor, test_file_path)
+    print(sagemaker_results)
+    
+    # Clean up: delete the SageMaker endpoint
+    print("\nCleaning up SageMaker endpoint...")
+    sagemaker_predictor.delete_endpoint()
