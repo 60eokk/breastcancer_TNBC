@@ -291,3 +291,5 @@ if __name__ == "__main__":
     # Clean up: delete the SageMaker endpoint
     print("\nCleaning up SageMaker endpoint...")
     sagemaker_predictor.delete_endpoint()
+
+    # AWS Configuration
