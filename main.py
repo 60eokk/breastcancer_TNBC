@@ -12,12 +12,12 @@ import sagemaker
 from sagemaker.tensorflow.model import TensorFlowModel
 
 # AWS Setup
-boto_session = boto3.Session(region_name='us-west-2')  # Replace with your preferred region
+boto_session = boto3.Session(region_name='us-east-1')  
 sagemaker_session = sagemaker.Session(boto_session=boto_session)
 s3 = boto3.resource('s3')
 
 # S3 bucket configuration
-bucket = 'your-s3-bucket-name'
+bucket = 'breastcancer-tnbc'
 prefix = 'tnbc-classification'
 
 def upload_to_s3(file_name, bucket, object_name=None):
