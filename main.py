@@ -16,6 +16,10 @@ boto_session = boto3.Session(region_name='us-east-1')
 sagemaker_session = sagemaker.Session(boto_session=boto_session)
 s3 = boto3.resource('s3')
 
+# IAM (Identity and Access Management): AWS's system for managing access to AWS services and resources securely (user, permission, etc)
+# S3: AWS's object storage service, designed to store and retrieve any amount of data
+
+
 # S3 bucket configuration
 bucket = 'breastcancer-tnbc'
 prefix = 'tnbc-classification'
@@ -240,15 +244,17 @@ print(predicted_results)
 
 # AWS Integration: Save and deploy the model
 def save_and_deploy_model():
-    # Save the model locally
-    pretrain_model.save('local_model')
+    # Save the model locally with .keras extension
+    model_path = 'local_model.keras'
+    pretrain_model.save(model_path)
     
     # Upload the model to S3
-    upload_to_s3('local_model', bucket, f"{prefix}/model")
+    s3_model_path = f"{prefix}/model.keras"
+    upload_to_s3(model_path, bucket, s3_model_path)
     
     # Deploy the model to SageMaker
-    tensorflow_model = TensorFlowModel(model_data=f"s3://{bucket}/{prefix}/model",
-                                       role='SageMakerRole',  # Replace with your SageMaker role ARN
+    tensorflow_model = TensorFlowModel(model_data=f"s3://{bucket}/{s3_model_path}",
+                                       role='arn:aws:iam::484907492660:role/SageMakerExecutionRole', 
                                        framework_version='2.6')
     predictor = tensorflow_model.deploy(initial_instance_count=1, instance_type='ml.t2.medium')
     
@@ -291,8 +297,3 @@ if __name__ == "__main__":
     # Clean up: delete the SageMaker endpoint
     print("\nCleaning up SageMaker endpoint...")
     sagemaker_predictor.delete_endpoint()
-
-    # AWS Configuration
-    # Copyexport AWS_ACCESS_KEY_ID=
-    # export AWS_SECRET_ACCESS_KEY=
-    # export AWS_DEFAULT_REGION=
