@@ -5,6 +5,8 @@ import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.metrics import classification_report
+import os
+import tarfile
 
 # AWS imports
 import boto3
@@ -244,20 +246,26 @@ print(predicted_results)
 
 # AWS Integration: Save and deploy the model
 def save_and_deploy_model():
-    # Save the model locally with .keras extension
-    model_path = 'local_model.keras'
-    pretrain_model.save(model_path)
-    
-    # Upload the model to S3
-    s3_model_path = f"{prefix}/model.keras"
-    upload_to_s3(model_path, bucket, s3_model_path)
-    
+    # Save the model in SavedModel format
+    save_path = './saved_model'
+    tf.saved_model.save(pretrain_model, save_path)
+
+    # Create a tar.gz archive
+    with tarfile.open('model.tar.gz', 'w:gz') as tar:
+        tar.add(save_path, arcname='1')  # SageMaker expects model files in a directory named '1'
+
+    # Upload the tar.gz to S3
+    s3_model_path = f"{prefix}/model.tar.gz"
+    upload_to_s3('model.tar.gz', bucket, s3_model_path)
+
     # Deploy the model to SageMaker
-    tensorflow_model = TensorFlowModel(model_data=f"s3://{bucket}/{s3_model_path}",
-                                       role='arn:aws:iam::484907492660:role/SageMakerExecutionRole', 
-                                       framework_version='2.6')
+    tensorflow_model = TensorFlowModel(
+        model_data=f"s3://{bucket}/{s3_model_path}",
+        role="arn:aws:iam::484907492660:role/SageMakerExecutionRole",
+        framework_version="2.6"
+    )
     predictor = tensorflow_model.deploy(initial_instance_count=1, instance_type='ml.t2.medium')
-    
+
     return predictor
 
 # AWS Integration: Predict using the deployed model
