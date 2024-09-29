@@ -247,12 +247,12 @@ print(predicted_results)
 # AWS Integration: Save and deploy the model
 def save_and_deploy_model():
     # Save the model in SavedModel format
-    save_path = './saved_model'
+    save_path = './saved_model_for_sagemaker'
     tf.saved_model.save(pretrain_model, save_path)
 
     # Create a tar.gz archive
     with tarfile.open('model.tar.gz', 'w:gz') as tar:
-        tar.add(save_path, arcname='1')  # SageMaker expects model files in a directory named '1'
+        tar.add(save_path, arcname='1')
 
     # Upload the tar.gz to S3
     s3_model_path = f"{prefix}/model.tar.gz"
@@ -262,7 +262,8 @@ def save_and_deploy_model():
     tensorflow_model = TensorFlowModel(
         model_data=f"s3://{bucket}/{s3_model_path}",
         role="arn:aws:iam::484907492660:role/SageMakerExecutionRole",
-        framework_version="2.6"
+        framework_version="2.6",
+        model_server_workers=1  # match model
     )
     predictor = tensorflow_model.deploy(initial_instance_count=1, instance_type='ml.t2.medium')
 
