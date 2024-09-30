@@ -271,15 +271,24 @@ def save_and_deploy_model():
 
 # AWS Integration: Predict using the deployed model
 def predict_with_sagemaker(predictor, test_file_path):
-    # Load and preprocess the test data (similar to the original predict_subtypes function)
     test_data = pd.read_excel(test_file_path)
     no_column = test_data['no.']
     test_data = test_data.iloc[:, 1:8]
     test_data_scaled = scaler.transform(test_data)
     
+    # Convert to list of lists for SageMaker
+    test_data_list = test_data_scaled[:70].tolist()
+    
     # Make predictions using the SageMaker endpoint
-    predictions = predictor.predict(test_data_scaled[:70])
-    predicted_classes = predictions['predictions'].argmax(axis=1)
+    predictions = predictor.predict(test_data_list)
+    
+    # Process predictions based on the actual output format
+    if isinstance(predictions, dict) and 'predictions' in predictions:
+        predicted_classes = predictions['predictions']
+    else:
+        predicted_classes = predictions
+    
+    predicted_classes = np.argmax(predicted_classes, axis=1)
     predicted_labels = label_encoder.inverse_transform(predicted_classes)
     
     # Format the results
