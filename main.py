@@ -9,6 +9,9 @@ import os
 import tarfile
 import time
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 # AWS imports
@@ -255,18 +258,22 @@ def get_s3_model_path():
 def save_and_deploy_model():
     # Save the model in Keras format
     model_path = 'model.h5'
+    logger.info(f"Saving model to {model_path}")
     pretrain_model.save(model_path)
 
     # Create a tar.gz archive
     tar_path = 'model.tar.gz'
+    logger.info(f"Creating tar archive: {tar_path}")
     with tarfile.open(tar_path, 'w:gz') as tar:
         tar.add(model_path, arcname=os.path.basename(model_path))
 
     # Upload the tar.gz to S3
     s3_model_path = f"{prefix}/model.tar.gz"
+    logger.info(f"Uploading model to S3: {s3_model_path}")
     upload_to_s3(tar_path, bucket, s3_model_path)
 
     # Deploy the model to SageMaker
+    logger.info("Deploying model to SageMaker")
     tensorflow_model = TensorFlowModel(
         model_data=f"s3://{bucket}/{s3_model_path}",
         role="arn:aws:iam::484907492660:role/SageMakerExecutionRole",
@@ -276,13 +283,15 @@ def save_and_deploy_model():
     predictor = tensorflow_model.deploy(
         initial_instance_count=1, 
         instance_type='ml.t2.medium',
-        endpoint_name=f'tnbc-endpoint-{int(time.time())}'
+        endpoint_name=f'tnbc-endpoint-{int(time.time())}',
+        wait=True
     )
 
     # Clean up local files
     os.remove(model_path)
     os.remove(tar_path)
 
+    logger.info("Model deployed successfully")
     return predictor
 
 # AWS Integration: Predict using the deployed model
