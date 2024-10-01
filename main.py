@@ -297,6 +297,25 @@ def predict_with_sagemaker(predictor, test_file_path):
         results += f"no.{no} : {subtype}\n"
     return results
 
+
+def serving_input_fn():
+    input_shape = (None, 7)  # Adjust based input shape
+    inputs = {'inputs': tf.compat.v1.placeholder(tf.float32, shape=input_shape)}
+    return tf.estimator.export.ServingInputReceiver(inputs, inputs)
+
+# In save_and_deploy_model function:
+tensorflow_model = TensorFlowModel(
+    model_data=f"s3://{bucket}/{s3_model_path}",
+    role="arn:aws:iam::484907492660:role/SageMakerExecutionRole",
+    framework_version="2.6",
+    model_server_workers=1,
+    entry_point='serve.py'  # Create file in your project directory
+)
+
+
+
+
+
 # Main execution with AWS integration
 if __name__ == "__main__":
     # Run the original prediction
