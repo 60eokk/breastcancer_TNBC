@@ -244,6 +244,10 @@ test_file_path = 'control data (TNBC).xlsx'
 predicted_results = predict_subtypes(test_file_path)
 print(predicted_results)
 
+def get_s3_model_path():
+    return f"{prefix}/model.tar.gz"
+
+
 # AWS Integration: Save and deploy the model
 def save_and_deploy_model():
     # Save the model in SavedModel format
@@ -255,7 +259,7 @@ def save_and_deploy_model():
         tar.add(save_path, arcname='1')
 
     # Upload the tar.gz to S3
-    s3_model_path = f"{prefix}/model.tar.gz"
+    s3_model_path = get_s3_model_path()
     upload_to_s3('model.tar.gz', bucket, s3_model_path)
 
     # Deploy the model to SageMaker
@@ -263,11 +267,12 @@ def save_and_deploy_model():
         model_data=f"s3://{bucket}/{s3_model_path}",
         role="arn:aws:iam::484907492660:role/SageMakerExecutionRole",
         framework_version="2.6",
-        model_server_workers=1
+        model_server_workers=1,
+        entry_point='serve.py' 
     )
     predictor = tensorflow_model.deploy(initial_instance_count=1, instance_type='ml.t2.medium')
 
-    return predictor, s3_model_path
+    return predictor
 
 # AWS Integration: Predict using the deployed model
 def predict_with_sagemaker(predictor, test_file_path):
@@ -298,37 +303,6 @@ def predict_with_sagemaker(predictor, test_file_path):
     return results
 
 
-def serving_input_fn():
-    input_shape = (None, 7)  # Adjust based input shape
-    inputs = {'inputs': tf.compat.v1.placeholder(tf.float32, shape=input_shape)}
-    return tf.estimator.export.ServingInputReceiver(inputs, inputs)
-
-# In save_and_deploy_model function:
-tensorflow_model = TensorFlowModel(
-    model_data=f"s3://{bucket}/{s3_model_path}",
-    role="arn:aws:iam::484907492660:role/SageMakerExecutionRole",
-    framework_version="2.6",
-    model_server_workers=1,
-    entry_point='serve.py'  # Create file in your project directory
-)
-
-def model_fn(model_dir):
-    model = tf.keras.models.load_model(model_dir + '/1')
-    return model
-
-def input_fn(request_body, request_content_type):
-    import numpy as np
-    return np.array(request_body, dtype=np.float32)
-
-def predict_fn(input_data, model):
-    return model.predict(input_data)
-
-def output_fn(prediction, content_type):
-    import json
-    return json.dumps(prediction.tolist())
-
-
-
 # Main execution with AWS integration
 if __name__ == "__main__":
     # Run the original prediction
@@ -337,7 +311,8 @@ if __name__ == "__main__":
     
     # Save and deploy the model to SageMaker
     print("\nDeploying model to SageMaker...")
-    sagemaker_predictor, s3_model_path = save_and_deploy_model()
+    s3_model_path = get_s3_model_path()
+    sagemaker_predictor = save_and_deploy_model()
     
     # Make predictions using the deployed SageMaker model
     print("\nSageMaker Prediction Results:")
