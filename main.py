@@ -263,11 +263,11 @@ def save_and_deploy_model():
         model_data=f"s3://{bucket}/{s3_model_path}",
         role="arn:aws:iam::484907492660:role/SageMakerExecutionRole",
         framework_version="2.6",
-        model_server_workers=1  # match model
+        model_server_workers=1
     )
     predictor = tensorflow_model.deploy(initial_instance_count=1, instance_type='ml.t2.medium')
 
-    return predictor
+    return predictor, s3_model_path
 
 # AWS Integration: Predict using the deployed model
 def predict_with_sagemaker(predictor, test_file_path):
@@ -337,7 +337,7 @@ if __name__ == "__main__":
     
     # Save and deploy the model to SageMaker
     print("\nDeploying model to SageMaker...")
-    sagemaker_predictor = save_and_deploy_model()
+    sagemaker_predictor, s3_model_path = save_and_deploy_model()
     
     # Make predictions using the deployed SageMaker model
     print("\nSageMaker Prediction Results:")
