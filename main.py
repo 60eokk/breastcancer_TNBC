@@ -8,6 +8,8 @@ from sklearn.metrics import classification_report
 import os
 import tarfile
 import time
+import json
+
 
 # AWS imports
 import boto3
@@ -290,11 +292,11 @@ def predict_with_sagemaker(predictor, test_file_path):
     test_data = test_data.iloc[:, 1:8]
     test_data_scaled = scaler.transform(test_data)
     
-    # Convert to list of lists for SageMaker
-    test_data_list = test_data_scaled[:70].tolist()
+    # Convert to list of lists and then to JSON for SageMaker
+    test_data_json = json.dumps(test_data_scaled[:70].tolist())
     
     # Make predictions using the SageMaker endpoint
-    predictions = predictor.predict(test_data_list)
+    predictions = predictor.predict(test_data_json)
     
     # Process predictions
     predicted_classes = np.argmax(predictions, axis=1)
