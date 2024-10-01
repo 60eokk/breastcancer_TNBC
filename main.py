@@ -251,17 +251,13 @@ def get_s3_model_path():
 
 # AWS Integration: Save and deploy the model
 def save_and_deploy_model():
-    # Save the model in SavedModel format
-    save_path = './saved_model_for_sagemaker'
-    tf.saved_model.save(pretrain_model, save_path)
+    # Save the model in Keras format
+    save_path = './model.h5'
+    pretrain_model.save(save_path)
 
-    # Create a tar.gz archive
-    with tarfile.open('model.tar.gz', 'w:gz') as tar:
-        tar.add(save_path, arcname='1')
-
-    # Upload the tar.gz to S3
-    s3_model_path = get_s3_model_path()
-    upload_to_s3('model.tar.gz', bucket, s3_model_path)
+    # Upload the model to S3
+    s3_model_path = f"{prefix}/model.h5"
+    upload_to_s3(save_path, bucket, s3_model_path)
 
     # Deploy the model to SageMaker
     tensorflow_model = TensorFlowModel(
@@ -273,7 +269,7 @@ def save_and_deploy_model():
     predictor = tensorflow_model.deploy(
         initial_instance_count=1, 
         instance_type='ml.t2.medium',
-        endpoint_name=f'tnbc-endpoint-{int(time.time())}'  # Add a unique endpoint name
+        endpoint_name=f'tnbc-endpoint-{int(time.time())}'
     )
 
     return predictor
@@ -291,13 +287,8 @@ def predict_with_sagemaker(predictor, test_file_path):
     # Make predictions using the SageMaker endpoint
     predictions = predictor.predict(test_data_list)
     
-    # Process predictions based on the actual output format
-    if isinstance(predictions, dict) and 'predictions' in predictions:
-        predicted_classes = predictions['predictions']
-    else:
-        predicted_classes = predictions
-    
-    predicted_classes = np.argmax(predicted_classes, axis=1)
+    # Process predictions
+    predicted_classes = np.argmax(predictions, axis=1)
     predicted_labels = label_encoder.inverse_transform(predicted_classes)
     
     # Format the results
@@ -312,6 +303,8 @@ if __name__ == "__main__":
     # Run the original prediction
     print("Original Prediction Results:")
     print(predicted_results)
+
+    print(pretrain_model.summary())
     
     # Save and deploy the model to SageMaker
     print("\nDeploying model to SageMaker...")
