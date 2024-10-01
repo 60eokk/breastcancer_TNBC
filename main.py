@@ -7,6 +7,7 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.metrics import classification_report
 import os
 import tarfile
+import time
 
 # AWS imports
 import boto3
