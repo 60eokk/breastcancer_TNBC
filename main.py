@@ -267,10 +267,13 @@ def save_and_deploy_model():
         model_data=f"s3://{bucket}/{s3_model_path}",
         role="arn:aws:iam::484907492660:role/SageMakerExecutionRole",
         framework_version="2.6",
-        model_server_workers=1,
-        entry_point='serve.py' 
+        entry_point='serve.py'
     )
-    predictor = tensorflow_model.deploy(initial_instance_count=1, instance_type='ml.t2.medium')
+    predictor = tensorflow_model.deploy(
+        initial_instance_count=1, 
+        instance_type='ml.t2.medium',
+        endpoint_name=f'tnbc-endpoint-{int(time.time())}'  # Add a unique endpoint name
+    )
 
     return predictor
 
