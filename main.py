@@ -282,10 +282,10 @@ def save_and_deploy_model():
     )
     predictor = tensorflow_model.deploy(
         initial_instance_count=1, 
-        instance_type='ml.t2.medium',
+        instance_type='ml.m5.xlarge',
         endpoint_name=f'tnbc-endpoint-{int(time.time())}',
         wait=True
-    )
+)
 
     # Clean up local files
     os.remove(model_path)
