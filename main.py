@@ -252,12 +252,17 @@ def get_s3_model_path():
 # AWS Integration: Save and deploy the model
 def save_and_deploy_model():
     # Save the model in Keras format
-    save_path = './model.h5'
-    pretrain_model.save(save_path)
+    model_path = 'model.h5'
+    pretrain_model.save(model_path)
 
-    # Upload the model to S3
-    s3_model_path = f"{prefix}/model.h5"
-    upload_to_s3(save_path, bucket, s3_model_path)
+    # Create a tar.gz archive
+    tar_path = 'model.tar.gz'
+    with tarfile.open(tar_path, 'w:gz') as tar:
+        tar.add(model_path, arcname=os.path.basename(model_path))
+
+    # Upload the tar.gz to S3
+    s3_model_path = f"{prefix}/model.tar.gz"
+    upload_to_s3(tar_path, bucket, s3_model_path)
 
     # Deploy the model to SageMaker
     tensorflow_model = TensorFlowModel(
@@ -271,6 +276,10 @@ def save_and_deploy_model():
         instance_type='ml.t2.medium',
         endpoint_name=f'tnbc-endpoint-{int(time.time())}'
     )
+
+    # Clean up local files
+    os.remove(model_path)
+    os.remove(tar_path)
 
     return predictor
 
